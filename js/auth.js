@@ -931,4 +931,3 @@ function getAuthErrorMessage(error) {
     return error.message ||
         "Authentication failed. Please try again.";
 }
-```
