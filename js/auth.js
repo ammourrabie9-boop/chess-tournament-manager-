@@ -1,4 +1,3 @@
-```javascript
 /* =====================================================
    CHESS TOURNAMENT MANAGER
    AUTHENTICATION
