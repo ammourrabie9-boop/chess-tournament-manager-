@@ -1,4 +1,4 @@
-
+```javascript
 /* =====================================================
    CHESS TOURNAMENT MANAGER
    AUTHENTICATION
@@ -9,7 +9,7 @@
 "use strict";
 
 const CHESS_SITE_BASE =
-    "https://ammourrabie9-boop.github.io/chess-tournament-manager./pages/";
+    "https://ammourrabie9-boop.github.io/chess-tournament-manager-/pages/";
 
 
 /* =====================================================
@@ -107,7 +107,6 @@ function setAuthMessage(element, text, type) {
 
 function handleGuestLogin() {
 
-    // Do not reuse a previous authenticated user's identity.
     localStorage.removeItem("userEmail");
     sessionStorage.removeItem("userEmail");
 
@@ -338,12 +337,6 @@ async function handleRegister(event) {
             );
         }
 
-        /*
-         * With email confirmation enabled, Supabase normally
-         * returns a user without an active session.
-         * Do not treat that as a logged-in account.
-         */
-
         if (data.session) {
 
             localStorage.removeItem(
@@ -406,17 +399,19 @@ async function handleRegister(event) {
 function initializeEmailConfirmation() {
 
     const message =
-        document.getElementById("confirmEmailMessage");
+        document.getElementById("confirmEmailMessage") ||
+        document.getElementById("confirmMessage");
 
     const confirmationStatus =
         document.getElementById("confirmationStatus");
 
-    // Do nothing on pages that do not contain confirmation UI.
     if (!message && !confirmationStatus) {
         return;
     }
 
-    if (!isSupabaseReady(message || confirmationStatus)) {
+    const statusElement = message || confirmationStatus;
+
+    if (!isSupabaseReady(statusElement)) {
         return;
     }
 
@@ -438,26 +433,19 @@ function initializeEmailConfirmation() {
 
     if (errorCode || errorDescription) {
         setAuthMessage(
-            message || confirmationStatus,
-            "Email confirmation failed or the link has expired. Please register again or request a new confirmation email.",
+            statusElement,
+            "Email confirmation failed or the link has expired. Please request a new confirmation email.",
             "error"
         );
         return;
     }
 
-    /*
-     * PKCE-based confirmation links can return a code query
-     * parameter. Supabase JS exchanges that code for a session.
-     *
-     * Some Supabase email templates instead return a token_hash.
-     * That flow requires verifyOtp with the correct email OTP type.
-     * Do not assume a token is valid without verification.
-     */
-
     const code = queryParams.get("code");
 
     if (code) {
-        window.supabaseClient.auth.exchangeCodeForSession(code)
+
+        window.supabaseClient.auth
+            .exchangeCodeForSession(code)
             .then(({ data, error }) => {
 
                 if (error) {
@@ -470,21 +458,40 @@ function initializeEmailConfirmation() {
                     );
                 }
 
+                localStorage.removeItem(
+                    "chessTournamentManager_guestMode"
+                );
+
+                sessionStorage.removeItem(
+                    "chessTournamentManager_guestMode"
+                );
+
+                localStorage.setItem(
+                    "userEmail",
+                    data.user.email || ""
+                );
+
+                sessionStorage.setItem(
+                    "userEmail",
+                    data.user.email || ""
+                );
+
                 setAuthMessage(
-                    message || confirmationStatus,
+                    statusElement,
                     "Email confirmed successfully! You can now log in.",
                     "success"
                 );
 
             })
             .catch((error) => {
+
                 console.error(
                     "EMAIL CONFIRMATION ERROR:",
                     error
                 );
 
                 setAuthMessage(
-                    message || confirmationStatus,
+                    statusElement,
                     "We could not confirm this email link. It may have expired or already been used. Please request a new confirmation email.",
                     "error"
                 );
@@ -493,12 +500,69 @@ function initializeEmailConfirmation() {
         return;
     }
 
-    /*
-     * Implicit-flow confirmation links may return an access token.
-     * Supabase JS detects supported callback fragments and restores
-     * the session automatically. Observe auth state before declaring
-     * success.
-     */
+    const tokenHash = queryParams.get("token_hash");
+    const type = queryParams.get("type");
+
+    if (tokenHash && type === "email") {
+
+        window.supabaseClient.auth
+            .verifyOtp({
+                token_hash: tokenHash,
+                type: "email"
+            })
+            .then(({ data, error }) => {
+
+                if (error) {
+                    throw error;
+                }
+
+                if (!data || !data.user) {
+                    throw new Error(
+                        "Email verification did not return a user."
+                    );
+                }
+
+                localStorage.removeItem(
+                    "chessTournamentManager_guestMode"
+                );
+
+                sessionStorage.removeItem(
+                    "chessTournamentManager_guestMode"
+                );
+
+                localStorage.setItem(
+                    "userEmail",
+                    data.user.email || ""
+                );
+
+                sessionStorage.setItem(
+                    "userEmail",
+                    data.user.email || ""
+                );
+
+                setAuthMessage(
+                    statusElement,
+                    "Email confirmed successfully! You can now log in.",
+                    "success"
+                );
+
+            })
+            .catch((error) => {
+
+                console.error(
+                    "EMAIL VERIFICATION ERROR:",
+                    error
+                );
+
+                setAuthMessage(
+                    statusElement,
+                    "We could not verify this email link. It may have expired or already been used. Please request a new confirmation email.",
+                    "error"
+                );
+            });
+
+        return;
+    }
 
     let resolved = false;
 
@@ -520,15 +584,14 @@ function initializeEmailConfirmation() {
                     resolved = true;
 
                     setAuthMessage(
-                        message || confirmationStatus,
-                        "Email confirmed successfully! You can now log in.",
+                        statusElement,
+                        "Email confirmation processed successfully. You can now log in.",
                         "success"
                     );
                 }
             }
         );
 
-    // Check whether a session was already restored.
     window.supabaseClient.auth.getSession()
         .then(({ data, error }) => {
 
@@ -540,17 +603,17 @@ function initializeEmailConfirmation() {
                 resolved = true;
 
                 setAuthMessage(
-                    message || confirmationStatus,
-                    "Your email confirmation was processed. You can now continue to login.",
+                    statusElement,
+                    "Your email confirmation was processed. You can now log in.",
                     "success"
                 );
 
                 return;
             }
 
-            if (!resolved && !code) {
+            if (!resolved) {
                 setAuthMessage(
-                    message || confirmationStatus,
+                    statusElement,
                     "Open the confirmation link from your email. If it has expired, request a new confirmation email.",
                     "error"
                 );
@@ -558,6 +621,7 @@ function initializeEmailConfirmation() {
 
         })
         .catch((error) => {
+
             console.error(
                 "CONFIRMATION SESSION CHECK ERROR:",
                 error
@@ -565,7 +629,7 @@ function initializeEmailConfirmation() {
 
             if (!resolved) {
                 setAuthMessage(
-                    message || confirmationStatus,
+                    statusElement,
                     "We could not verify the confirmation session. Please open the latest confirmation email.",
                     "error"
                 );
@@ -627,7 +691,7 @@ async function handleForgotPassword(event) {
         const { error } =
             await window.supabaseClient.auth
                 .resetPasswordForEmail(email, {
-                    redirectTo
+                    redirectTo: redirectTo
                 });
 
         if (error) {
@@ -752,7 +816,7 @@ async function handlePasswordUpdate(event) {
 
         const { error } =
             await window.supabaseClient.auth.updateUser({
-                password
+                password: password
             });
 
         if (error) {
@@ -767,11 +831,6 @@ async function handlePasswordUpdate(event) {
             "Password updated successfully. You can now log in with your new password.",
             "success"
         );
-
-        /*
-         * Sign out the recovery session so the user can log in
-         * explicitly with the new password.
-         */
 
         await window.supabaseClient.auth.signOut();
 
@@ -873,3 +932,4 @@ function getAuthErrorMessage(error) {
     return error.message ||
         "Authentication failed. Please try again.";
 }
+```
