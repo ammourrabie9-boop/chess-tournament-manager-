@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Confirming Account - Chess Tournament Manager</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/auth.css">
+
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background:
+                radial-gradient(
+                    circle at center,
+                    rgba(184, 134, 11, 0.18),
+                    transparent 60%
+                ),
+                linear-gradient(135deg, #100c08, #2b1b0e, #100c08);
+        }
+
+        .auth-box {
+            width: 100%;
+            max-width: 460px;
+            padding: 36px 28px;
+            text-align: center;
+            background: rgba(27, 20, 13, 0.96);
+            border: 1px solid #b8860b;
+            border-radius: 16px;
+            box-shadow: 0 0 35px rgba(184, 134, 11, 0.16);
+        }
+
+        .auth-box h1 {
+            color: #e0b653;
+            margin-bottom: 20px;
+        }
+
+        .auth-message {
+            line-height: 1.7;
+            overflow-wrap: anywhere;
+        }
+
+        .auth-message.info {
+            color: #f0dca8;
+        }
+
+        .auth-message.success {
+            color: #70d99b;
+        }
+
+        .auth-message.error {
+            color: #ff8a80;
+        }
+
+        .confirm-login-link {
+            display: inline-block;
+            margin-top: 18px;
+            color: #e0b653;
+            text-decoration: underline;
+        }
+
+        .confirm-login-link:hover {
+            color: #fff0bd;
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="auth-page">
+        <div class="auth-box">
+
+            <h1>Confirming Your Account</h1>
+
+            <p
+                id="confirmMessage"
+                class="auth-message info"
+                aria-live="polite"
+                role="status"
+            >
+                Verifying your email. Please wait...
+            </p>
+
+            <a
+                id="loginLink"
+                class="confirm-login-link"
+                href="login.html"
+                hidden
+            >
+                Return to Login
+            </a>
+
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/config.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            const message = document.getElementById("confirmMessage");
+            const loginLink = document.getElementById("loginLink");
+            const client = window.supabaseClient;
+
+            function showMessage(text, type) {
+                message.textContent = text;
+                message.className = "auth-message " + type;
+            }
+
+            function showLoginLink() {
+                loginLink.hidden = false;
+            }
+
+            function redirectToDashboard() {
+                window.location.replace("dashboard.html");
+            }
+
+            if (!client || !client.auth) {
+                showMessage(
+                    "The authentication service could not be loaded. Please refresh the page and try again.",
+                    "error"
+                );
+                showLoginLink();
+                return;
+            }
+
+            try {
+                const url = new URL(window.location.href);
+                const params = url.searchParams;
+
+                const code = params.get("code");
+                const tokenHash = params.get("token_hash");
+                const urlType = params.get("type");
+
+                let verificationCompleted = false;
+                let verificationError = null;
+
+                /*
+                 * Method 1: PKCE confirmation links use ?code=...
+                 */
+                if (code) {
+                    const { error } =
+                        await client.auth.exchangeCodeForSession(code);
+
+                    if (error) {
+                        verificationError = error;
+                    } else {
+                        verificationCompleted = true;
+                    }
+                }
+
+                /*
+                 * Method 2: Email templates may use
+                 * ?token_hash=...&type=email
+                 */
+                else if (tokenHash) {
+                    const allowedTypes = [
+                        "signup",
+                        "invite",
+                        "magiclink",
+                        "recovery",
+                        "email_change",
+                        "email"
+                    ];
+
+                    const otpType = allowedTypes.includes(urlType)
+                        ? urlType
+                        : "email";
+
+                    const { error } = await client.auth.verifyOtp({
+                        token_hash: tokenHash,
+                        type: otpType
+                    });
+
+                    if (error) {
+                        verificationError = error;
+                    } else {
+                        verificationCompleted = true;
+                    }
+                }
+
+                /*
+                 * Method 3: Some links return tokens in the URL fragment.
+                 * Supabase may process these automatically during
+                 * client initialization.
+                 */
+                if (!verificationCompleted && !code && !tokenHash) {
+                    const hashParams = new URLSearchParams(
+                        url.hash.startsWith("#")
+                            ? url.hash.slice(1)
+                            : url.hash
+                    );
+
+                    const accessToken = hashParams.get("access_token");
+                    const refreshToken = hashParams.get("refresh_token");
+                    const hashType = hashParams.get("type");
+
+                    if (accessToken && refreshToken) {
+                        const { error } = await client.auth.setSession({
+                            access_token: accessToken,
+                            refresh_token: refreshToken
+                        });
+
+                        if (error) {
+                            verificationError = error;
+                        } else {
+                            verificationCompleted = true;
+                        }
+                    } else if (hashType === "signup") {
+                        verificationError = new Error(
+                            "The confirmation link did not contain usable session tokens."
+                        );
+                    }
+                }
+
+                /*
+                 * Check the current session after processing the callback.
+                 */
+                const { data: sessionData, error: sessionError } =
+                    await client.auth.getSession();
+
+                if (sessionError) {
+                    throw sessionError;
+                }
+
+                const session = sessionData && sessionData.session;
+                const user = session && session.user;
+
+                if (user) {
+                    localStorage.setItem("userEmail", user.email || "");
+
+                    localStorage.removeItem(
+                        "chessTournamentManager_guestMode"
+                    );
+
+                    sessionStorage.removeItem(
+                        "chessTournamentManager_guestMode"
+                    );
+
+                    showMessage(
+                        verificationCompleted
+                            ? "Your email has been confirmed successfully. Redirecting to your account..."
+                            : "Your account has an active session. Redirecting to your dashboard...",
+                        "success"
+                    );
+
+                    setTimeout(redirectToDashboard, 1200);
+                    return;
+                }
+
+                if (verificationError) {
+                    console.error(
+                        "EMAIL CONFIRMATION ERROR:",
+                        verificationError
+                    );
+                }
+
+                showMessage(
+                    "We could not confirm your email or create a session. The link may have expired or already been used. Please open the latest confirmation email and try again.",
+                    "error"
+                );
+
+                showLoginLink();
+
+            } catch (error) {
+                console.error("EMAIL CONFIRMATION ERROR:", error);
+
+                showMessage(
+                    "An error occurred while confirming your account. Please try the latest confirmation link again.",
+                    "error"
+                );
+
+                showLoginLink();
+            }
+        });
+    </script>
+
+</body>
+</html>

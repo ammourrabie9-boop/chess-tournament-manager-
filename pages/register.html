@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create Account - Chess Tournament Manager</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/auth.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+            color: #f5f5f5;
+            background:
+                radial-gradient(ellipse at top, #382b12 0%, transparent 50%),
+                linear-gradient(135deg, #050505, #17130a 50%, #050505);
+            font-family: Arial, sans-serif;
+        }
+
+        .auth-page {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 35px 18px;
+            background: transparent !important;
+        }
+
+        .auth-page .auth-box {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            width: 100%;
+            max-width: 460px;
+            padding: 38px 35px 32px;
+            color: #f5f5f5 !important;
+            background: linear-gradient(145deg, #1b1b1b, #0a0a0a) !important;
+            border: 1px solid #c9a43b !important;
+            border-radius: 16px !important;
+            box-shadow:
+                0 25px 70px rgba(0, 0, 0, 0.75),
+                0 0 30px rgba(212, 175, 55, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        .auth-page .auth-box::before {
+            content: "";
+            position: absolute;
+            z-index: -1;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(
+                90deg,
+                #765710,
+                #f8e7a0,
+                #d4af37,
+                #f8e7a0,
+                #765710
+            );
+        }
+
+        .auth-page .chess-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 68px;
+            height: 68px;
+            margin: 0 auto 18px;
+            color: #111 !important;
+            background: linear-gradient(145deg, #f8e7a0, #d4af37) !important;
+            border: 1px solid #fff0b0 !important;
+            border-radius: 50% !important;
+            box-shadow: 0 5px 24px rgba(212, 175, 55, 0.22);
+            font-size: 36px;
+        }
+
+        .auth-page .auth-box h1 {
+            margin: 0 0 10px;
+            color: #e4c45c !important;
+            text-align: center;
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+        }
+
+        .auth-page .auth-description {
+            margin: 0 0 27px;
+            color: #bcbcbc !important;
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .auth-page #registerForm label {
+            display: block;
+            margin: 0 0 8px;
+            color: #e8dba8 !important;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .auth-page #registerForm input {
+            display: block;
+            width: 100% !important;
+            height: 47px;
+            margin: 0 0 19px;
+            padding: 0 14px;
+            color: #fff !important;
+            background: #111 !important;
+            border: 1px solid #48412e !important;
+            border-radius: 8px !important;
+            outline: none;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .auth-page #registerForm input::placeholder {
+            color: #858585 !important;
+        }
+
+        .auth-page #registerForm input:focus {
+            border-color: #d4af37 !important;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.13) !important;
+        }
+
+        /* زر إنشاء الحساب: ذهبي وأسود */
+        .auth-page #registerForm button,
+        .auth-page #registerForm button[type="submit"] {
+            display: block !important;
+            width: 100% !important;
+            min-height: 49px !important;
+            margin: 8px 0 0 !important;
+            padding: 12px 16px !important;
+
+            color: #111111 !important;
+            background: linear-gradient(
+                135deg,
+                #fff0ad 0%,
+                #f3dc82 25%,
+                #d4af37 60%,
+                #b38b20 100%
+            ) !important;
+
+            border: 1px solid #f8e7a0 !important;
+            border-radius: 8px !important;
+
+            font-family: Arial, sans-serif !important;
+            font-size: 15px !important;
+            font-weight: 800 !important;
+            text-align: center !important;
+            text-transform: none !important;
+            letter-spacing: 0.3px !important;
+
+            cursor: pointer !important;
+            opacity: 1 !important;
+            box-shadow:
+                0 6px 20px rgba(212, 175, 55, 0.20),
+                inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+
+            transition:
+                transform 0.2s ease,
+                filter 0.2s ease,
+                box-shadow 0.2s ease !important;
+        }
+
+        .auth-page #registerForm button:hover,
+        .auth-page #registerForm button[type="submit"]:hover {
+            color: #000000 !important;
+            background: linear-gradient(
+                135deg,
+                #fff5c9 0%,
+                #f8e7a0 35%,
+                #e4c45c 70%,
+                #c9a43b 100%
+            ) !important;
+            filter: brightness(1.05);
+            transform: translateY(-2px);
+            box-shadow: 0 9px 25px rgba(212, 175, 55, 0.32) !important;
+        }
+
+        .auth-page #registerForm button:active {
+            transform: translateY(0);
+        }
+
+        .auth-page #registerForm button:focus-visible {
+            outline: 2px solid #fff0ad !important;
+            outline-offset: 4px !important;
+        }
+
+        .auth-page #registerForm button:disabled {
+            color: #29220d !important;
+            background: linear-gradient(135deg, #b9a45c, #8d7426) !important;
+            opacity: 0.7 !important;
+            cursor: not-allowed !important;
+            transform: none !important;
+        }
+
+        .auth-page #registerMessage {
+            min-height: 20px;
+            margin: 16px 0 0;
+            color: #e5e5e5 !important;
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        .auth-page #registerMessage.success {
+            color: #a8e6b0 !important;
+        }
+
+        .auth-page #registerMessage.error {
+            color: #ff9999 !important;
+        }
+
+        .auth-page .auth-switch {
+            margin: 24px 0 0;
+            padding-top: 19px;
+            color: #bcbcbc !important;
+            background: transparent !important;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .auth-page .auth-switch a {
+            color: #e4c45c !important;
+            font-weight: 800;
+            text-decoration: none !important;
+        }
+
+        .auth-page .auth-switch a:hover {
+            color: #fff0ad !important;
+            text-decoration: underline !important;
+        }
+
+        @media (max-width: 480px) {
+            .auth-page {
+                padding: 20px 13px;
+            }
+
+            .auth-page .auth-box {
+                padding: 34px 22px 26px;
+            }
+
+            .auth-page .auth-box h1 {
+                font-size: 26px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="auth-page">
+        <div class="auth-box">
+
+            <div class="chess-logo" aria-hidden="true">♞</div>
+
+            <h1>Create Account</h1>
+
+            <p class="auth-description">
+                Join Chess Tournament Manager and start organizing your tournaments.
+            </p>
+
+            <form id="registerForm">
+
+                <label for="registerEmail">Email</label>
+                <input
+                    type="email"
+                    id="registerEmail"
+                    name="email"
+                    placeholder="Enter your email"
+                    autocomplete="email"
+                    required
+                >
+
+                <label for="registerPassword">Password</label>
+                <input
+                    type="password"
+                    id="registerPassword"
+                    name="password"
+                    placeholder="Create a password"
+                    autocomplete="new-password"
+                    required
+                >
+
+                <label for="confirmPassword">Confirm Password</label>
+                <input
+                    type="password"
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    placeholder="Confirm your password"
+                    autocomplete="new-password"
+                    required
+                >
+
+                <button type="submit">Create Account</button>
+
+            </form>
+
+            <p id="registerMessage" class="auth-message" aria-live="polite"></p>
+
+            <p class="auth-switch">
+                Already have an account?
+                <a href="login.html">Login</a>
+            </p>
+
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/auth.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login - Chess Tournament Manager</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/auth.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100%;
+        }
+
+        body {
+            min-height: 100vh;
+            color: #f5f5f5;
+            font-family: Arial, sans-serif;
+            background:
+                radial-gradient(
+                    ellipse at top,
+                    #382b12 0%,
+                    transparent 50%
+                ),
+                linear-gradient(
+                    135deg,
+                    #050505,
+                    #17130a 50%,
+                    #050505
+                );
+        }
+
+        /* Main page */
+        .login-page {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 35px 18px;
+            background: transparent !important;
+        }
+
+        /* Login card — matches Create Account */
+        .login-page .login-card {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            width: 100%;
+            max-width: 460px;
+            padding: 38px 35px 32px;
+            color: #f5f5f5 !important;
+            background: linear-gradient(
+                145deg,
+                #1b1b1b,
+                #0a0a0a
+            ) !important;
+            border: 1px solid #c9a43b !important;
+            border-radius: 16px !important;
+            box-shadow:
+                0 25px 70px rgba(0, 0, 0, 0.75),
+                0 0 30px rgba(212, 175, 55, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        /* Gold top accent */
+        .login-page .login-card::before {
+            content: "";
+            position: absolute;
+            z-index: -1;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(
+                90deg,
+                #765710,
+                #f8e7a0,
+                #d4af37,
+                #f8e7a0,
+                #765710
+            );
+        }
+
+        /* Chess logo */
+        .chess-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 68px;
+            height: 68px;
+            margin: 0 auto 18px;
+            color: #111 !important;
+            background: linear-gradient(
+                145deg,
+                #f8e7a0,
+                #d4af37
+            ) !important;
+            border: 1px solid #fff0b0 !important;
+            border-radius: 50% !important;
+            box-shadow: 0 5px 24px rgba(212, 175, 55, 0.22);
+            font-size: 36px;
+            line-height: 1;
+        }
+
+        /* Heading */
+        .login-page .login-card h1 {
+            margin: 0 0 10px;
+            color: #e4c45c !important;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+        }
+
+        .login-page .login-subtitle {
+            margin: 0 0 27px;
+            color: #bcbcbc !important;
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Form */
+        .login-page .form-group {
+            margin-bottom: 19px;
+        }
+
+        .login-page .form-group label {
+            display: block;
+            margin: 0 0 8px;
+            color: #e8dba8 !important;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .login-page .form-group input {
+            display: block;
+            width: 100% !important;
+            height: 47px;
+            margin: 0;
+            padding: 0 14px;
+            color: #fff !important;
+            background: #111 !important;
+            border: 1px solid #48412e !important;
+            border-radius: 8px !important;
+            outline: none;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            transition:
+                border-color 0.2s,
+                box-shadow 0.2s;
+        }
+
+        .login-page .form-group input::placeholder {
+            color: #858585 !important;
+        }
+
+        .login-page .form-group input:focus {
+            border-color: #d4af37 !important;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.13) !important;
+        }
+
+        /* Forgot password */
+        .login-page .forgot-password {
+            display: block;
+            width: fit-content;
+            margin: -3px 0 18px auto;
+            color: #e4c45c !important;
+            text-align: right;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none !important;
+            transition: color 0.2s;
+        }
+
+        .login-page .forgot-password:hover {
+            color: #fff0ad !important;
+            text-decoration: underline !important;
+        }
+
+        /* Login button */
+        .login-page .login-button {
+            display: block !important;
+            width: 100% !important;
+            min-height: 49px !important;
+            margin: 8px 0 0 !important;
+            padding: 12px 16px !important;
+            color: #111 !important;
+            background: linear-gradient(
+                135deg,
+                #fff0ad 0%,
+                #f3dc82 25%,
+                #d4af37 60%,
+                #b38b20 100%
+            ) !important;
+            border: 1px solid #f8e7a0 !important;
+            border-radius: 8px !important;
+            font-family: Arial, sans-serif !important;
+            font-size: 15px !important;
+            font-weight: 800 !important;
+            text-align: center;
+            cursor: pointer;
+            box-shadow:
+                0 6px 20px rgba(212, 175, 55, 0.20),
+                inset 0 1px 0 rgba(255, 255, 255, 0.35);
+            transition:
+                transform 0.2s ease,
+                filter 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .login-page .login-button:hover {
+            color: #000 !important;
+            background: linear-gradient(
+                135deg,
+                #fff5c9,
+                #f8e7a0 35%,
+                #e4c45c 70%,
+                #c9a43b
+            ) !important;
+            filter: brightness(1.05);
+            transform: translateY(-2px);
+            box-shadow: 0 9px 25px rgba(212, 175, 55, 0.32);
+        }
+
+        .login-page .login-button:disabled {
+            opacity: 0.7 !important;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Divider */
+        .login-page .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 22px 0;
+            color: #bcbcbc !important;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .login-page .divider::before,
+        .login-page .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: rgba(212, 175, 55, 0.3);
+        }
+
+        /* Guest button */
+        .login-page .guest-button {
+            display: block !important;
+            width: 100% !important;
+            min-height: 49px !important;
+            margin: 0 !important;
+            padding: 12px 16px !important;
+            color: #e4c45c !important;
+            background: rgba(212, 175, 55, 0.07) !important;
+            border: 1px solid #8f732b !important;
+            border-radius: 8px !important;
+            font-family: Arial, sans-serif !important;
+            font-size: 15px !important;
+            font-weight: 700 !important;
+            text-align: center;
+            cursor: pointer;
+            transition:
+                background 0.2s,
+                border-color 0.2s,
+                color 0.2s,
+                transform 0.2s;
+        }
+
+        .login-page .guest-button:hover {
+            color: #fff0ad !important;
+            background: rgba(212, 175, 55, 0.15) !important;
+            border-color: #d4af37 !important;
+            transform: translateY(-2px);
+        }
+
+        /* Login messages */
+        .login-page #loginMessage {
+            display: none;
+            min-height: 20px;
+            margin: 16px 0 0;
+            padding: 11px;
+            color: #e5e5e5 !important;
+            background: rgba(255, 255, 255, 0.04) !important;
+            border: 1px solid rgba(212, 175, 55, 0.25) !important;
+            border-radius: 8px !important;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        /* Register link */
+        .login-page .register-link {
+            margin: 24px 0 0;
+            padding-top: 19px;
+            color: #bcbcbc !important;
+            background: transparent !important;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .login-page .register-link a {
+            color: #e4c45c !important;
+            font-weight: 800;
+            text-decoration: none !important;
+        }
+
+        .login-page .register-link a:hover {
+            color: #fff0ad !important;
+            text-decoration: underline !important;
+        }
+
+        /* Back home */
+        .login-page .back-home {
+            display: block;
+            width: fit-content;
+            margin: 18px auto 0;
+            color: #a9a9a9 !important;
+            text-align: center;
+            font-size: 13px;
+            text-decoration: none !important;
+            transition: color 0.2s;
+        }
+
+        .login-page .back-home:hover {
+            color: #e4c45c !important;
+        }
+
+        /* Keyboard accessibility */
+        .login-page button:focus-visible,
+        .login-page a:focus-visible {
+            outline: 2px solid #fff0ad;
+            outline-offset: 4px;
+        }
+
+        /* Mobile */
+        @media (max-width: 480px) {
+            .login-page {
+                padding: 20px 13px;
+            }
+
+            .login-page .login-card {
+                padding: 34px 22px 26px;
+            }
+
+            .login-page .login-card h1 {
+                font-size: 26px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="login-page">
+        <section class="login-card">
+
+            <div class="chess-logo" aria-hidden="true">♞</div>
+
+            <h1>Welcome Back</h1>
+
+            <p class="login-subtitle">
+                Sign in to your Chess Tournament Manager account
+            </p>
+
+            <form id="loginForm">
+
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+
+                    <input
+                        type="email"
+                        id="loginEmail"
+                        name="email"
+                        placeholder="Enter your email"
+                        autocomplete="email"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+
+                    <input
+                        type="password"
+                        id="loginPassword"
+                        name="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <a class="forgot-password" href="forgot-password.html">
+                    Forgot password?
+                </a>
+
+                <button
+                    type="submit"
+                    id="loginButton"
+                    class="login-button"
+                >
+                    Login
+                </button>
+
+                <div
+                    id="loginMessage"
+                    role="status"
+                    aria-live="polite"
+                ></div>
+
+            </form>
+
+            <div class="divider">OR</div>
+
+            <button
+                type="button"
+                id="guestButton"
+                class="guest-button"
+            >
+                ♞ Continue as Guest
+            </button>
+
+            <p class="register-link">
+                Don't have an account?
+                <a href="register.html">Create Account</a>
+            </p>
+
+            <a class="back-home" href="../index.html">
+                ← Back to Home
+            </a>
+
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/config.js"></script>
+    <script src="../js/auth.js"></script>
+</body>
+
+</html>
